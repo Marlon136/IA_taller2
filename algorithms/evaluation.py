@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from algorithms.utils import bfs_distance, dijkstra
 
-
+visited_positions = set()
 if TYPE_CHECKING:
     from world.game_state import GameState
 
@@ -41,5 +42,101 @@ def evaluation_function(state: GameState) -> float:
     - Consider edge cases: no pending deliveries, no hunters nearby.
     - A good evaluation function balances delivery progress with hunter avoidance.
     """
-    # TODO: Implement your code here
-    return 0.0
+    
+    if state.is_win():
+        return 1000
+
+    if state.is_lose():
+        return -1000
+
+    drone = state.get_drone_position()
+    hunters = state.get_hunter_positions()
+    deliveries = state.get_pending_deliveries()
+
+    layout = state.get_layout()
+
+    score = state.get_score()
+
+    value = 0.0
+
+  
+    # (a) distancia a delivery usando DIJKSTRA (se multiplica por 5 para darle peso)
+    
+    if deliveries:
+        
+        d_delivery = min(
+            dijkstra(layout, drone, d)[0]
+            for d in deliveries
+        )
+
+        value -= 5 * d_delivery
+
+    # (b) distancia a cazadores BFS restringido (se multiplica por 3 cada distancia para darle peso)
+   
+
+    min_hunter_dist = float("inf")
+
+    for h in hunters:
+
+        d_hunter = bfs_distance(
+            layout,
+            h,
+            drone,
+            True
+        )
+
+        if d_hunter == 0:
+            return -1000
+
+        if d_hunter < min_hunter_dist:
+            min_hunter_dist = d_hunter
+
+        if d_hunter != float("inf"):
+            value += 3 * d_hunter
+
+ 
+    # (c) safe position (se multiplica por 4 cada distancia para darle peso)
+  
+
+    if min_hunter_dist != float("inf"):
+        value += 4 * min_hunter_dist
+
+ 
+    # (d) deliveries pendientes (se multiplica por 50 el numero de deliveries para darle peso)
+
+
+    value -= 50 * len(deliveries)
+
+    
+    # (e) score actual
+ 
+
+    value += score
+
+    
+    # (f) urgency usando DIJKSTRA
+    
+
+    for d in deliveries:
+
+        d_drone = dijkstra(layout, drone, d)[0]
+
+        hunter_dists = [
+            bfs_distance(layout, h, d, True)
+            for h in hunters
+        ]
+
+        if hunter_dists and d_drone < min(hunter_dists):
+            value += 20
+
+    # (g) evitar ciclos 
+    if drone in visited_positions:
+      value -= 5
+
+    visited_positions.add(drone)
+
+    # limitar rango
+
+    value = max(-1000, min(1000, value))
+
+    return value

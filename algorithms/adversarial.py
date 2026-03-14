@@ -65,8 +65,77 @@ class MinimaxAgent(MultiAgentSearchAgent):
         - The next agent is (agent_index + 1) % num_agents. Depth decreases after all agents have moved (full ply).
         - Return the ACTION (not the value) that maximizes the minimax value for the drone.
         """
-        # TODO: Implement your code here
-        return None
+        num_agents = state.get_num_agents()
+
+        def minimax(state, agent_index, depth):
+
+            if state.is_win() or state.is_lose() or depth == 0:
+                return self.evaluation_function(state)
+
+            next_agent = (agent_index + 1) % num_agents
+            next_depth = depth - 1 if next_agent == 0 else depth
+
+            if agent_index == 0:
+
+                value = float("-inf")
+
+                for action in state.get_legal_actions(agent_index):
+
+                    successor = state.generate_successor(
+                        agent_index, action
+                    )
+
+                    value = max(
+                        value,
+                        minimax(
+                            successor,
+                            next_agent,
+                            next_depth
+                        )
+                    )
+
+                return value
+
+            else:
+
+                value = float("inf")
+
+                for action in state.get_legal_actions(agent_index):
+
+                    successor = state.generate_successor(
+                        agent_index, action
+                    )
+
+                    value = min(
+                        value,
+                        minimax(
+                            successor,
+                            next_agent,
+                            next_depth
+                        )
+                    )
+
+                return value
+
+        best_action = None
+        best_value = float("-inf")
+
+        for action in state.get_legal_actions(0):
+
+            successor = state.generate_successor(0, action)
+
+            value = minimax(
+                successor,
+                1,
+                self.depth
+            )
+
+            if value > best_value:
+                best_value = value
+                best_action = action
+
+        return best_action
+        
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
