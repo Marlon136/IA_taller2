@@ -24,9 +24,27 @@ def backtracking_search(csp: DroneAssignmentCSP) -> dict[str, str] | None:
     You can find inspiration in the textbook's pseudocode:
     Artificial Intelligence: A Modern Approach (4th Edition) by Russell and Norvig, Chapter 5: Constraint Satisfaction Problems
     """
-    # TODO: Implement your code here
-    return None
+    
+    return backtrack({},csp)
 
+def backtrack(assignment, csp) -> dict | None:
+    
+    if csp.is_complete(assignment):
+        return assignment
+
+    var = csp.get_unassigned_variables(assignment) [0]
+
+    for value in csp.domains[var]:
+        if csp.is_consistent(var, value, assignment):
+            csp.assign(var, value, assignment)
+
+            result = backtrack(assignment, csp)
+            if result != None:
+                return result
+
+            csp.unassign(var, assignment)
+
+    return None
 
 def backtracking_fc(csp: DroneAssignmentCSP) -> dict[str, str] | None:
     """
