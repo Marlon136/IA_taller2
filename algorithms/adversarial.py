@@ -192,5 +192,58 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         - Do NOT prune in expectimax (unlike alpha-beta).
         - self.prob is set via the constructor argument prob.
         """
-        # TODO: Implement your code here
-        return None
+
+
+        num_agents = state.get_num_agents()
+        
+        def expectimax(state, agent_index, depth):
+            if state.is_win() or state.is_lose() or depth == 0:
+                return self.evaluation_function(state)
+                
+            next_agent = (agent_index + 1) % num_agents
+            next_depth = depth - 1 if next_agent == 0 else depth
+            
+            acciones_legales = state.get_legal_actions(agent_index)
+            if not acciones_legales: 
+                return self.evaluation_function(state)
+
+            if agent_index == 0: # NODO MAX (Dron)
+                value = float("-inf")
+                for action in acciones_legales:
+                    successor = state.generate_successor(agent_index, action)
+                    value = max(value, expectimax(successor, next_agent, next_depth))
+                return value
+                
+            else: # NODO CHANCE (Cazadores)
+                child_values = []
+                for action in acciones_legales:
+                    successor = state.generate_successor(agent_index, action)
+                    value_actual = expectimax(successor, next_agent, next_depth)
+                    child_values.append(value_actual)
+                    
+                promedio = sum(child_values) / len(child_values)
+                value = (1 - self.prob) * min(child_values) + self.prob * promedio
+                return value
+
+        # DISPARADOR PRINCIPAL
+        acciones_dron = state.get_legal_actions(0)
+        
+        if not acciones_dron:
+            return None
+
+
+        best_action = acciones_dron[0] 
+        best_value = float("-inf")
+
+        for accion in acciones_dron:
+            sucesor = state.generate_successor(0, accion)
+            action_value = expectimax(sucesor, 1, self.depth)
+            
+            if action_value > best_value:
+                best_value = action_value
+                best_action = accion
+
+        return best_action
+
+
+
