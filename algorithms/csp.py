@@ -7,10 +7,25 @@ if TYPE_CHECKING:
 
 
 def backtracking_search(csp: DroneAssignmentCSP) -> dict[str, str] | None:
-   
+    """
+    Basic backtracking search without optimizations.
+
+    Tips:
+    - An assignment is a dictionary mapping variables to values (e.g. {X1: Cell(1,2), X2: Cell(3,4)}).
+    - Use csp.assign(var, value, assignment) to assign a value to a variable.
+    - Use csp.unassign(var, assignment) to unassign a variable.
+    - Use csp.is_consistent(var, value, assignment) to check if an assignment is consistent with the constraints.
+    - Use csp.is_complete(assignment) to check if the assignment is complete (all variables assigned).
+    - Use csp.get_unassigned_variables(assignment) to get a list of unassigned variables.
+    - Use csp.domains[var] to get the list of possible values for a variable.
+    - Use csp.get_neighbors(var) to get the list of variables that share a constraint with var.
+    - Add logs to measure how good your implementation is (e.g. number of assignments, backtracks).
+
+    You can find inspiration in the textbook's pseudocode:
+    Artificial Intelligence: A Modern Approach (4th Edition) by Russell and Norvig, Chapter 5: Constraint Satisfaction Problems
+    """
     # TODO: Implement your code here
     return None
-
 
 def backtracking_fc(csp: DroneAssignmentCSP) -> dict[str, str] | None:
     
